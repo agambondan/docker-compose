@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  postgres-main:
+    image: postgres:16-alpine
+    container_name: postgres-main
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: maindb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    restart: always
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+
+networks:
+  app_network:
+    external: true

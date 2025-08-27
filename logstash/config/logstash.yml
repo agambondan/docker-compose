@@ -1,0 +1,5 @@
+http.host: "0.0.0.0"
+xpack.monitoring.elasticsearch.hosts: [ "http://elasticsearch-master:9200" ]
+pipeline.ecs_compatibility: disabled
+config.reload.automatic: true
+config.reload.interval: 3s

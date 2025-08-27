@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  elasticsearch-master:
+    image: elasticsearch:8.11.0
+    container_name: elasticsearch-master
+    environment:
+      - node.name=es-master
+      - cluster.name=docker-cluster
+      - node.roles=master,ingest
+      - discovery.seed_hosts=elasticsearch-data1,elasticsearch-data2
+      - cluster.initial_master_nodes=es-master
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_master_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - elastic_network
+    restart: always
+
+  elasticsearch-data1:
+    image: elasticsearch:8.11.0
+    container_name: elasticsearch-data1
+    environment:
+      - node.name=es-data1
+      - cluster.name=docker-cluster
+      - node.roles=data,ingest
+      - discovery.seed_hosts=elasticsearch-master,elasticsearch-data2
+      - cluster.initial_master_nodes=es-master
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data1:/usr/share/elasticsearch/data
+    networks:
+      - elastic_network
+    restart: always
+    depends_on:
+      - elasticsearch-master
+
+  elasticsearch-data2:
+    image: elasticsearch:8.11.0
+    container_name: elasticsearch-data2
+    environment:
+      - node.name=es-data2
+      - cluster.name=docker-cluster
+      - node.roles=data,ingest
+      - discovery.seed_hosts=elasticsearch-master,elasticsearch-data1
+      - cluster.initial_master_nodes=es-master
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data2:/usr/share/elasticsearch/data
+    networks:
+      - elastic_network
+    restart: always
+    depends_on:
+      - elasticsearch-master
+
+volumes:
+  elasticsearch_master_data:
+  elasticsearch_data1:
+  elasticsearch_data2:
+
+networks:
+  elastic_network:
+    external: true

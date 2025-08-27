@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  redis-main:
+    image: redis:7-alpine
+    container_name: redis-main
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: always
+    networks:
+      - app_network
+
+volumes:
+  redis_data:
+
+networks:
+  app_network:
+    external: true

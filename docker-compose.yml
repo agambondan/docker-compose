@@ -1,0 +1,431 @@
+services:
+  # === Database Services ===
+  postgres-main:
+    image: postgres:16-alpine
+    container_name: postgres-main
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: maindb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - app_network
+
+  redis-main:
+    image: redis:7-alpine
+    container_name: redis-main
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+    networks:
+      - app_network
+
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb-server
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: maindb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    command: [--auth]
+    restart: always
+    networks:
+      - app_network
+
+  # === Elasticsearch Cluster ===
+  elasticsearch-master:
+    image: elasticsearch:8.11.0
+    container_name: elasticsearch-master
+    environment:
+      - node.name=es-master
+      - cluster.name=docker-cluster
+      - node.roles=master,ingest
+      - discovery.seed_hosts=elasticsearch-data1,elasticsearch-data2
+      - cluster.initial_master_nodes=es-master
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_master_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - elastic_network
+    restart: always
+
+  elasticsearch-data1:
+    image: elasticsearch:8.11.0
+    container_name: elasticsearch-data1
+    environment:
+      - node.name=es-data1
+      - cluster.name=docker-cluster
+      - node.roles=data,ingest
+      - discovery.seed_hosts=elasticsearch-master,elasticsearch-data2
+      - cluster.initial_master_nodes=es-master
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data1:/usr/share/elasticsearch/data
+    networks:
+      - elastic_network
+    restart: always
+    depends_on:
+      - elasticsearch-master
+
+  elasticsearch-data2:
+    image: elasticsearch:8.11.0
+    container_name: elasticsearch-data2
+    environment:
+      - node.name=es-data2
+      - cluster.name=docker-cluster
+      - node.roles=data,ingest
+      - discovery.seed_hosts=elasticsearch-master,elasticsearch-data1
+      - cluster.initial_master_nodes=es-master
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data2:/usr/share/elasticsearch/data
+    networks:
+      - elastic_network
+    restart: always
+    depends_on:
+      - elasticsearch-master
+
+  kibana:
+    image: kibana:8.11.0
+    container_name: kibana-server
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch-master:9200
+      ELASTICSEARCH_USERNAME: ""
+      ELASTICSEARCH_PASSWORD: ""
+      SERVER_NAME: kibana-server
+      SERVER_HOST: "0.0.0.0"
+    ports:
+      - "5601:5601"
+    volumes:
+      - kibana_data:/usr/share/kibana/data
+    networks:
+      - elastic_network
+      - proxy_network
+    restart: always
+    depends_on:
+      - elasticsearch-master
+
+  # === Monitoring Stack ===
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus-server
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - monitoring_network
+    restart: always
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - monitoring_network
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-server
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN=grafana.local
+      - GF_SMTP_ENABLED=false
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - monitoring_network
+      - proxy_network
+    restart: always
+    depends_on:
+      - prometheus
+
+  # === Reverse Proxy ===
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_logs:/var/log/nginx
+    restart: always
+    networks:
+      - proxy_network
+    depends_on:
+      - grafana
+      - kibana
+
+  # === ELK Data Ingestion ===
+  logstash:
+    image: logstash:8.11.0
+    container_name: logstash-server
+    volumes:
+      - ./logstash/config:/usr/share/logstash/config:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - logstash_data:/usr/share/logstash/data
+    ports:
+      - "5044:5044"  # Beats input
+      - "5000:5000"  # TCP input
+      - "9600:9600"  # HTTP API
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - elastic_network
+      - app_network
+    restart: always
+    depends_on:
+      - elasticsearch-master
+
+  filebeat:
+    image: elastic/filebeat:8.11.0
+    container_name: filebeat-server
+    user: root
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - filebeat_data:/usr/share/filebeat/data
+    networks:
+      - elastic_network
+    restart: always
+    depends_on:
+      - elasticsearch-master
+      - logstash
+
+  # === Development Services ===
+  node-dev:
+    image: node:20-alpine
+    container_name: node-development
+    working_dir: /app
+    volumes:
+      - ./projects/nodejs:/app
+      - node_modules:/app/node_modules
+    ports:
+      - "3001:3000"  # Next.js
+      - "3002:3001"  # Additional port
+      - "4000:4000"  # GraphQL/API
+    command: sh -c "npm install && npm run dev"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  php-dev:
+    image: php:8.2-fpm-alpine
+    container_name: php-development
+    volumes:
+      - ./projects/php:/var/www/html
+      - ./php/php.ini:/usr/local/etc/php/php.ini:ro
+    expose:
+      - "9000"
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  nginx-dev:
+    image: nginx:alpine
+    container_name: nginx-development
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./nginx/php.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./projects/php:/var/www/html
+      - nginx_logs:/var/log/nginx
+    networks:
+      - app_network
+    depends_on:
+      - php-dev
+    restart: always
+
+  java-dev:
+    image: openjdk:17-jdk-slim
+    container_name: java-development
+    working_dir: /app
+    volumes:
+      - ./projects/java:/app
+      - maven_cache:/root/.m2
+    ports:
+      - "8081:8080"
+      - "5005:5005"  # Debug port
+    command: sh -c "sleep infinity"
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  golang-dev:
+    image: golang:1.21-alpine
+    container_name: go-development
+    working_dir: /app
+    volumes:
+      - ./projects/go:/app
+      - go_modules:/go/pkg/mod
+    ports:
+      - "8082:8080"
+      - "2345:2345"  # Delve debug port
+    command: sh -c "go mod tidy && go run main.go"
+    environment:
+      - CGO_ENABLED=0
+      - GOOS=linux
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  # === Development Tools ===
+  minio:
+    image: minio/minio:latest
+    container_name: minio-storage
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+    command: server /data --console-address ":9001"
+    networks:
+      - app_network
+    restart: always
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube-server
+    ports:
+      - "9002:9000"
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://postgres-main:5432/sonarqube
+      SONAR_JDBC_USERNAME: admin
+      SONAR_JDBC_PASSWORD: admin123
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    networks:
+      - app_network
+    restart: always
+    depends_on:
+      - postgres-main
+
+  jenkins:
+    image: jenkins/jenkins:lts-alpine
+    container_name: jenkins-server
+    ports:
+      - "8083:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
+    networks:
+      - app_network
+    restart: always
+
+volumes:
+  # Database volumes
+  postgres_data:
+  redis_data:
+  mongodb_data:
+  mongodb_config:
+  
+  # Elasticsearch & ELK volumes
+  elasticsearch_master_data:
+  elasticsearch_data1:
+  elasticsearch_data2:
+  kibana_data:
+  logstash_data:
+  filebeat_data:
+  
+  # Development volumes
+  node_modules:
+  maven_cache:
+  go_modules:
+  
+  # Tools volumes
+  minio_data:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  jenkins_data:
+  
+  # Monitoring volumes
+  prometheus_data:
+  grafana_data:
+  
+  # Other volumes
+  nginx_logs:
+
+networks:
+  app_network:
+    driver: bridge
+  elastic_network:
+    driver: bridge
+  monitoring_network:
+    driver: bridge
+  proxy_network:
+    driver: bridge

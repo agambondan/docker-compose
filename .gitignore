@@ -1,0 +1,109 @@
+# ===================================================================
+# File .gitignore Universal
+# Mencakup file umum dari berbagai bahasa, OS, dan editor.
+# ===================================================================
+
+# 1. Umum & Sistem Operasi
+# ===================================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+*~
+*.swp
+*.swo
+
+# 2. IDE & Editor Kode
+# ===================================================================
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains (IntelliJ, PyCharm, WebStorm, dll.)
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Lain-lain
+*.suo
+*.user
+nbproject/
+
+# 3. Direktori Dependensi & Package Manager
+# ===================================================================
+node_modules/
+vendor/
+.venv/
+venv/
+env/
+jspm_packages/
+bower_components/
+.bundle/
+.next
+*.lock
+
+# 4. File Build, Kompilasi & Artefak
+# ===================================================================
+build/
+dist/
+bin/
+obj/
+out/
+target/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.class
+*.jar
+*.war
+*.ear
+*.pyc
+*.pyd
+*.pyo
+
+# 5. File Log
+# ===================================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 6. File Environment & Rahasia (Sangat Penting!)
+# ===================================================================
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# 7. File dari Tools & Testing
+# ===================================================================
+.pytest_cache/
+coverage/
+.nyc_output/
+.cache/
+.sass-cache/
+
+# 8. File Upload & Media
+# ===================================================================
+uploads/
+media/
+*.zip
+*.tar.gz
+
+# 9. Spesifik Bahasa (Tambahan)
+# ===================================================================
+# Python
+__pycache__/
+
+# DotNet
+[Bb]in/
+[Oo]bj/

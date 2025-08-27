@@ -1,0 +1,26 @@
+filebeat.inputs:
+- type: container
+  paths:
+    - /var/lib/docker/containers/*/*.log
+  processors:
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+
+- type: log
+  paths:
+    - /var/log/*.log
+    - /var/log/nginx/*.log
+
+processors:
+- add_host_metadata:
+    when.not.contains.tags: forwarded
+
+output.logstash:
+  hosts: ["logstash-server:5044"]
+
+# Alternative: Direct to Elasticsearch
+# output.elasticsearch:
+#   hosts: ["elasticsearch-master:9200"]
+#   index: "filebeat-%{+yyyy.MM.dd}"
+
+logging.level: info

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    restart: always
+    depends_on:
+      - grafana
+      - kibana
+      - portainer
+    networks:
+      - proxy_network
+
+volumes:
+  nginx_logs:
+
+networks:
+  proxy_network:
+    external: true
