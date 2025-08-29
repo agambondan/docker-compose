@@ -1,22 +1,26 @@
-version: '3.8'
+version: "3.9"
 
 services:
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
     ports:
-      - "8000:8000"
-      - "9443:9443"
+      - "8000:8000" # Agent
+      - "9443:9443" # Web UI via HTTPS
+      - "9000:9000" # Web UI via HTTP (optional)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
+    environment:
+      - ADMIN_USERNAME=admin.portainer.io
+      - ADMIN_PASSWORD=admin.portainer.io
     restart: always
     networks:
-      - proxy_network
+      - app_network
 
 volumes:
   portainer_data:
 
 networks:
-  proxy_network:
-    external: true
+  app_network:
+    driver: bridge

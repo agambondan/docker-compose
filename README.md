@@ -1,3 +1,5 @@
+---
+
 # Fullstack Development Environment dengan Docker Compose
 
 Repositori ini berisi konfigurasi lengkap untuk fullstack development environment menggunakan Docker Compose yang mencakup database, monitoring, logging, development tools, dan CI/CD.
@@ -5,38 +7,47 @@ Repositori ini berisi konfigurasi lengkap untuk fullstack development environmen
 ## 🏗️ Arsitektur Stack
 
 ### Database Services
-- **PostgreSQL 16** - Main database (Port: 5432)
-- **Redis 7** - Cache & session store (Port: 6379)  
-- **MongoDB 7** - Document database (Port: 27017)
+****
+* **PostgreSQL 16** - Main database (Port: 5432)
+* **Redis 7** - Cache & session store (Port: 6379)
+* **MongoDB 7** - Document database (Port: 27017)
 
 ### Elasticsearch Stack (ELK)
-- **Elasticsearch Cluster** - Search engine dengan master dan data nodes
-  - Master Node (Port: 9200, 9300)
-  - Data Node 1
-  - Data Node 2
-- **Logstash** - Log processing pipeline (Port: 5044, 5000, 9600)
-- **Filebeat** - Log shipper untuk Docker containers
-- **Kibana** - Data visualization (Port: 5601)
+****
+* **Elasticsearch Cluster** - Search engine dengan master dan data nodes
+
+  * Master Node (Port: 9200, 9300)
+  * Data Node 1
+  * Data Node 2
+* **Logstash** - Log processing pipeline (Port: 5044, 5000, 9600)
+* **Filebeat** - Log shipper untuk Docker containers
+* **Kibana** - Data visualization (Port: 5601)
 
 ### Development Environments
-- **Node.js 20** - Next.js & React development (Port: 3001)
-- **PHP 8.2-FPM** - PHP development dengan Nginx (Port: 8080)
-- **Java 17 JDK** - Java development dengan Maven (Port: 8081)
-- **Go 1.21** - Go development environment (Port: 8082)
+
+* **Node.js 20** - Next.js & React development (Port: 3001)
+* **PHP 8.2-FPM** - PHP development dengan Nginx (Port: 8080)
+* **Java 17 JDK** - Java development dengan Maven (Port: 8081)
+* **Go 1.21** - Go development environment (Port: 8082)
 
 ### Development Tools & CI/CD
-- **MinIO** - S3-compatible object storage (Port: 9000, 9001)
-- **SonarQube** - Code quality analysis (Port: 9002)
-- **Jenkins** - CI/CD automation (Port: 8083)
+
+* **MinIO** - S3-compatible object storage (Port: 9000, 9001)
+* **SonarQube** - Code quality analysis (Port: 9002)
+* **Jenkins** - CI/CD automation (Port: 8083)
 
 ### Monitoring Stack
-- **Prometheus** - Metrics collection (Port: 9090)
-- **Grafana** - Monitoring dashboard (Port: 3000)
-- **Node Exporter** - System metrics (Port: 9100)
+
+* **Prometheus** - Metrics collection (Port: 9090)
+* **Grafana** - Monitoring dashboard (Port: 3000)
+* **Node Exporter** - System metrics (Port: 9100)
 
 ### Infrastructure
-- **Nginx** - Reverse proxy (Port: 80, 443)
-- **Portainer** - Docker management UI (Port: 8000, 9443)
+
+* **Nginx** - Reverse proxy (Port: 80, 443)
+* **Portainer** - Docker management UI (Port: 8000, 9443)
+
+---
 
 ## 🚀 Quick Start
 
@@ -49,67 +60,106 @@ Repositori ini berisi konfigurasi lengkap untuk fullstack development environmen
 # Stop semua services
 ./manage.sh stop
 
-# Restart semua services
-./manage.sh restart
+# Restart service tertentu
+./manage.sh restart grafana
 
 # Check status
 ./manage.sh status
+./manage.sh status postgres-main
 
 # View logs
 ./manage.sh logs
-
-# View logs untuk service tertentu
 ./manage.sh logs grafana
 
 # Backup databases
 ./manage.sh backup
+
+# Lihat daftar service & grup
+./manage.sh list
 ```
+
+### Jalankan berdasarkan grup
+
+Script mendukung grouping, jadi bisa start/stop per kategori:
+
+```bash
+./manage.sh start db         # Postgres, Mongo, Redis
+./manage.sh start elastic    # Elasticsearch cluster
+./manage.sh start kibana     # Kibana saja
+./manage.sh start monitoring # Prometheus, Grafana, Node Exporter
+./manage.sh start dev        # Semua environment dev (Node, PHP, Java, Go)
+./manage.sh stop dev         # Stop semua service dev
+```
+
+**Grup yang tersedia:**
+
+| Group        | Services                                                       |
+| ------------ | -------------------------------------------------------------- |
+| `db`         | postgres-main, mongodb, redis-main                             |
+| `elastic`    | elasticsearch-master, elasticsearch-data1, elasticsearch-data2 |
+| `kibana`     | kibana                                                         |
+| `monitoring` | prometheus, node-exporter, grafana                             |
+| `proxy`      | nginx                                                          |
+| `elk-ingest` | logstash, filebeat                                             |
+| `dev`        | node-dev, php-dev, nginx-dev, java-dev, golang-dev             |
+| `tools`      | minio, sonarqube, jenkins                                      |
+
+---
 
 ### Manual dengan Docker Compose
 
 ```bash
 # Start stack
-sudo docker compose up -d
+docker compose up -d
 
 # Stop stack
-sudo docker compose down
+docker compose down
 
 # View status
-sudo docker compose ps
+docker compose ps
 
 # View logs
-sudo docker compose logs -f [service_name]
+docker compose logs -f [service_name]
 ```
+
+---
 
 ## 📋 Default Credentials
 
-| Service | Username | Password | URL |
-|---------|----------|----------|-----|
-| Portainer | admin | admin123 | https://localhost:9443 |
-| Grafana | admin | admin123 | http://localhost:3000 |
-| PostgreSQL | admin | admin123 | localhost:5432 |
-| MongoDB | admin | admin123 | localhost:27017 |
-| Kibana | - | - | http://localhost:5601 |
-| Prometheus | - | - | http://localhost:9090 |
+| Service    | Username | Password | URL                                              |
+| ---------- | -------- | -------- | ------------------------------------------------ |
+| Portainer  | admin    | admin123 | [https://localhost:9443](https://localhost:9443) |
+| Grafana    | admin    | admin123 | [http://localhost:3000](http://localhost:3000)   |
+| PostgreSQL | admin    | admin123 | localhost:5432                                   |
+| MongoDB    | admin    | admin123 | localhost:27017                                  |
+| Kibana     | -        | -        | [http://localhost:5601](http://localhost:5601)   |
+| Prometheus | -        | -        | [http://localhost:9090](http://localhost:9090)   |
+
+---
 
 ## 🌐 URLs & Endpoints
 
 ### Web Interfaces
-- **Portainer**: https://localhost:9443
-- **Grafana**: http://localhost:3000
-- **Kibana**: http://localhost:5601
-- **Prometheus**: http://localhost:9090
-- **Elasticsearch**: http://localhost:9200
+
+* **Portainer**: [https://localhost:9443](https://localhost:9443)
+* **Grafana**: [http://localhost:3000](http://localhost:3000)
+* **Kibana**: [http://localhost:5601](http://localhost:5601)
+* **Prometheus**: [http://localhost:9090](http://localhost:9090)
+* **Elasticsearch**: [http://localhost:9200](http://localhost:9200)
 
 ### Database Connections
-- **PostgreSQL**: `postgresql://admin:admin123@localhost:5432/maindb`
-- **Redis**: `redis://localhost:6379`
-- **MongoDB**: `mongodb://admin:admin123@localhost:27017/maindb`
+
+* **PostgreSQL**: `postgresql://admin:admin123@localhost:5432/maindb`
+* **Redis**: `redis://localhost:6379`
+* **MongoDB**: `mongodb://admin:admin123@localhost:27017/maindb`
 
 ### Reverse Proxy (Nginx)
-- **Grafana**: http://grafana.local (add to /etc/hosts)
-- **Kibana**: http://kibana.local (add to /etc/hosts)  
-- **Portainer**: http://portainer.local (add to /etc/hosts)
+
+* **Grafana**: [http://grafana.local](http://grafana.local) (add to /etc/hosts)
+* **Kibana**: [http://kibana.local](http://kibana.local) (add to /etc/hosts)
+* **Portainer**: [http://portainer.local](http://portainer.local) (add to /etc/hosts)
+
+---
 
 ## 📁 Struktur Folder
 
@@ -135,30 +185,38 @@ docker-compose/
 └── portainer/                  # Portainer configs
 ```
 
+---
+
 ## 🔧 Konfigurasi
 
 ### Networks
-- `app_network` - Database services
-- `elastic_network` - Elasticsearch cluster
-- `monitoring_network` - Monitoring stack
-- `proxy_network` - Reverse proxy
+
+* `app_network` - Database services
+* `elastic_network` - Elasticsearch cluster
+* `monitoring_network` - Monitoring stack
+* `proxy_network` - Reverse proxy
 
 ### Volumes
+
 Semua data disimpan dalam Docker volumes:
-- `postgres_data` - PostgreSQL data
-- `redis_data` - Redis data
-- `mongodb_data` - MongoDB data
-- `elasticsearch_master_data` - ES master data
-- `elasticsearch_data1` - ES data node 1
-- `elasticsearch_data2` - ES data node 2
-- `grafana_data` - Grafana dashboards
-- `prometheus_data` - Prometheus metrics
-- `kibana_data` - Kibana configs
-- `portainer_data` - Portainer settings
+
+* `postgres_data` - PostgreSQL data
+* `redis_data` - Redis data
+* `mongodb_data` - MongoDB data
+* `elasticsearch_master_data` - ES master data
+* `elasticsearch_data1` - ES data node 1
+* `elasticsearch_data2` - ES data node 2
+* `grafana_data` - Grafana dashboards
+* `prometheus_data` - Prometheus metrics
+* `kibana_data` - Kibana configs
+* `portainer_data` - Portainer settings
+
+---
 
 ## 🛠️ Customization
 
 ### Environment Variables
+
 Sesuaikan environment variables di `docker-compose.yml`:
 
 ```yaml
@@ -168,6 +226,7 @@ environment:
 ```
 
 ### Resource Limits
+
 Sesuaikan resource limits untuk production:
 
 ```yaml
@@ -179,91 +238,113 @@ deploy:
 ```
 
 ### SSL/HTTPS
+
 Untuk HTTPS, tambahkan SSL certificates di `nginx/ssl/` dan update konfigurasi nginx.
+
+---
 
 ## 📊 Monitoring
 
 ### Grafana Dashboards
-- Node Exporter metrics untuk system monitoring
-- Docker containers monitoring
-- Database performance metrics
+
+* Node Exporter metrics untuk system monitoring
+* Docker containers monitoring
+* Database performance metrics
 
 ### Prometheus Targets
-- Node Exporter (system metrics)
-- Grafana (application metrics)
-- Elasticsearch (cluster health)
+
+* Node Exporter (system metrics)
+* Grafana (application metrics)
+* Elasticsearch (cluster health)
 
 ### Kibana
-- Elasticsearch cluster monitoring
-- Application logs analysis
-- Custom dashboards
+
+* Elasticsearch cluster monitoring
+* Application logs analysis
+* Custom dashboards
+
+---
 
 ## 🔄 Backup & Recovery
 
 ### Manual Backup
+
 ```bash
 # PostgreSQL
-sudo docker exec postgres-main pg_dump -U admin maindb > postgres_backup.sql
+docker exec postgres-main pg_dump -U admin maindb > postgres_backup.sql
 
 # MongoDB
-sudo docker exec mongodb-server mongodump --out /backup
+docker exec mongodb-server mongodump --out /backup
 
 # Redis
-sudo docker exec redis-main redis-cli BGSAVE
+docker exec redis-main redis-cli BGSAVE
 ```
 
 ### Automated Backup
+
 Gunakan script `manage.sh backup` untuk backup otomatis semua databases.
+
+---
 
 ## 🐛 Troubleshooting
 
 ### Check Logs
+
 ```bash
 # All services
-sudo docker compose logs
+docker compose logs
 
 # Specific service
-sudo docker compose logs elasticsearch-master
+docker compose logs elasticsearch-master
 
 # Follow logs
-sudo docker compose logs -f grafana
+docker compose logs -f grafana
 ```
 
 ### Health Checks
+
 ```bash
 # PostgreSQL
-sudo docker exec postgres-main pg_isready
+docker exec postgres-main pg_isready
 
 # Redis
-sudo docker exec redis-main redis-cli ping
+docker exec redis-main redis-cli ping
 
 # MongoDB
-sudo docker exec mongodb-server mongosh --eval "db.runCommand('ping')"
+docker exec mongodb-server mongosh --eval "db.runCommand('ping')"
 
 # Elasticsearch
 curl http://localhost:9200/_cluster/health
 ```
 
 ### Resource Issues
-- Elasticsearch membutuhkan minimal 1GB RAM per node
-- Sesuaikan `ES_JAVA_OPTS` jika memory terbatas
-- Gunakan `docker stats` untuk monitoring resource usage
+
+* Elasticsearch membutuhkan minimal 1GB RAM per node
+* Sesuaikan `ES_JAVA_OPTS` jika memory terbatas
+* Gunakan `docker stats` untuk monitoring resource usage
+
+---
 
 ## 🔒 Security Notes
 
-- **Production**: Ganti semua default passwords
-- **Firewall**: Restrict ports access sesuai kebutuhan
-- **SSL**: Enable HTTPS untuk semua web interfaces
-- **Network**: Gunakan custom networks untuk isolation
-- **Secrets**: Gunakan Docker secrets untuk production
+* **Production**: Ganti semua default passwords
+* **Firewall**: Restrict ports access sesuai kebutuhan
+* **SSL**: Enable HTTPS untuk semua web interfaces
+* **Network**: Gunakan custom networks untuk isolation
+* **Secrets**: Gunakan Docker secrets untuk production
+
+---
 
 ## 📝 Changelog
 
-- **v1.0** - Initial setup dengan complete development stack
-- Database stack (PostgreSQL, Redis, MongoDB)
-- ELK stack (Elasticsearch cluster, Kibana)
-- Monitoring (Prometheus, Grafana)
-- Infrastructure (Nginx, Portainer)
+* **v1.0** - Initial setup dengan complete development stack
+* **v1.1** - Tambahan fitur management script:
+
+  * Start/stop per service
+  * Start/stop berdasarkan grup (db, elastic, kibana, monitoring, dev, tools, dll)
+  * Command `list` untuk lihat semua service & grup
+
+---
 
 ## 🤝 Contributing
 
@@ -273,6 +354,10 @@ curl http://localhost:9200/_cluster/health
 4. Test with `./manage.sh start`
 5. Submit pull request
 
+---
+
 ## 📜 License
 
 MIT License - feel free to use dan modify sesuai kebutuhan.
+
+---

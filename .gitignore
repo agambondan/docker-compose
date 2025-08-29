@@ -46,7 +46,8 @@ jspm_packages/
 bower_components/
 .bundle/
 .next
-*.lock
+*/**/yarn.lock
+*/**/package-lock.json
 
 # 4. File Build, Kompilasi & Artefak
 # ===================================================================

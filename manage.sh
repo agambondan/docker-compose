@@ -38,7 +38,7 @@ check_requirements() {
         exit 1
     fi
 
-    if ! command -v docker-compose &> /dev/null; then
+    if ! command -v docker compose &> /dev/null; then
         print_error "Docker Compose is not installed"
         exit 1
     fi
@@ -46,13 +46,13 @@ check_requirements() {
 
 start_stack() {
     print_status "Starting development stack..."
-    
+
     # Stop existing containers if running
     sudo docker stop $(sudo docker ps -q) 2>/dev/null || true
-    
+
     # Start with docker-compose
     sudo docker compose up -d
-    
+
     print_status "Stack started successfully!"
     print_status "Services available at:"
     echo "  - Portainer: https://localhost:9443 (admin/admin123)"
@@ -96,13 +96,13 @@ backup_data() {
     print_status "Creating backup..."
     BACKUP_DIR="backups/$(date +%Y%m%d_%H%M%S)"
     mkdir -p $BACKUP_DIR
-    
+
     # Backup PostgreSQL
     sudo docker exec postgres-main pg_dump -U admin maindb > $BACKUP_DIR/postgres_backup.sql
-    
+
     # Backup MongoDB
     sudo docker exec mongodb-server mongodump --host localhost --port 27017 --username admin --password admin123 --authenticationDatabase admin --out $BACKUP_DIR/mongodb_backup
-    
+
     print_status "Backup created in: $BACKUP_DIR"
 }
 

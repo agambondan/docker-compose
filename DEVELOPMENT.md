@@ -25,7 +25,7 @@ curl -X POST "http://localhost:8080" \
   -H "Content-Type: application/json" \
   -d '{
     "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'",
-    "level": "INFO", 
+    "level": "INFO",
     "message": "Test via Logstash",
     "service": "my-app"
   }'
@@ -103,7 +103,7 @@ File PHP sudah tersedia di `projects/php/index.php` dengan contoh:
 # Start Java container
 sudo docker compose up -d java-dev
 
-# Access container  
+# Access container
 sudo docker exec -it java-development bash
 
 # Dalam container - buat Spring Boot project
@@ -216,7 +216,7 @@ Available metrics endpoints:
 **PostgreSQL**:
 ```
 Host: postgres-main
-Port: 5432  
+Port: 5432
 Database: maindb
 Username: admin
 Password: admin123
@@ -228,7 +228,7 @@ Connection String: mongodb://admin:admin123@mongodb-server:27017/maindb
 ```
 
 **Redis**:
-```  
+```
 Host: redis-main
 Port: 6379
 No password (atau uncomment di redis.conf)
@@ -261,14 +261,14 @@ Application Logs → Logstash → Elasticsearch → Kibana
 
 ### 2. Development Workflow
 1. Code dalam `projects/[language]/` folder
-2. Container auto-reload pada file changes  
+2. Container auto-reload pada file changes
 3. Logs otomatis masuk ke Elasticsearch
 4. Monitor via Grafana dashboards
 5. Debug via Kibana
 
 ### 3. Database Strategy
 - **PostgreSQL**: Relational data, transactions
-- **MongoDB**: Document data, flexibility  
+- **MongoDB**: Document data, flexibility
 - **Redis**: Cache, sessions, real-time data
 
 ### 4. Storage Strategy
@@ -279,9 +279,9 @@ Application Logs → Logstash → Elasticsearch → Kibana
 
 ### Health Checks
 ```bash
-# Check all services
+# Check all **services**
 curl http://localhost:8082/health  # Go service
-curl http://localhost:8080         # PHP service  
+curl http://localhost:8080         # PHP service
 curl http://localhost:3001         # Node.js service
 curl http://localhost:9200/_cluster/health  # Elasticsearch
 ```
@@ -294,7 +294,7 @@ curl -X POST http://localhost:8082/test-logstash
 curl -X POST http://localhost:8080  # PHP test buttons
 ```
 
-### Performance Testing  
+### Performance Testing
 ```bash
 # Load test dengan Apache Bench
 sudo apt install apache2-utils
@@ -320,7 +320,7 @@ ab -n 1000 -c 10 http://localhost:8082/health
 
 ### Scaling Strategy
 - [ ] Horizontal scaling untuk apps
-- [ ] Elasticsearch cluster scaling  
+- [ ] Elasticsearch cluster scaling
 - [ ] Database read replicas
 - [ ] Load balancer configuration
 - [ ] Container orchestration (K8s)
