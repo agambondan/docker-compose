@@ -1,4 +1,4 @@
-<?php
+a<?php
 // Simple PHP application for development
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

@@ -1,8 +1,10 @@
----
-
 # Fullstack Development Environment dengan Docker Compose
 
 Repositori ini berisi konfigurasi lengkap untuk fullstack development environment menggunakan Docker Compose yang mencakup database, monitoring, logging, development tools, dan CI/CD.
+
+```
+docker network create --driver bridge --subnet 10.250.0.0/16 --gateway 10.250.0.1 shared_compose_net
+```
 
 ## 🏗️ Arsitektur Stack
 

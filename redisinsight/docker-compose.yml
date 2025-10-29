@@ -12,4 +12,5 @@ services:
 
 networks:
   app_network:
-    driver: bridge
+    external: true
+    name: shared_compose_net

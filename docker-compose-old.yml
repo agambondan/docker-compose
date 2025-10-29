@@ -73,4 +73,5 @@ volumes:
 
 networks:
   default:
-    name: development_network
+    external: true
+    name: shared_compose_net

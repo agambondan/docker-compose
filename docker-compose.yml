@@ -422,10 +422,14 @@ volumes:
 
 networks:
   app_network:
-    driver: bridge
+    external: true
+    name: shared_compose_net
   elastic_network:
-    driver: bridge
+    external: true
+    name: shared_compose_net
   monitoring_network:
-    driver: bridge
+    external: true
+    name: shared_compose_net
   proxy_network:
-    driver: bridge
+    external: true
+    name: shared_compose_net

@@ -26,3 +26,4 @@ volumes:
 networks:
   elastic_network:
     external: true
+    name: shared_compose_net

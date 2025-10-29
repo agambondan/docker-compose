@@ -29,3 +29,4 @@ volumes:
 networks:
   monitoring_network:
     external: true
+    name: shared_compose_net
